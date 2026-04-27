@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>iSellBeer — Event Content Generator</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --bg-secondary: #f7f6f3;
+    --bg-tertiary: #f0efe9;
+    --text-primary: #1a1a18;
+    --text-secondary: #5f5e5a;
+    --text-tertiary: #888780;
+    --border: rgba(0,0,0,0.12);
+    --border-mid: rgba(0,0,0,0.2);
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --amber-50: #FAEEDA;
+    --amber-100: #FAC775;
+    --amber-600: #854F0B;
+    --amber-800: #633806;
+    --blue-50: #E6F1FB;
+    --blue-600: #185FA5;
+    --blue-800: #0C447C;
+    --teal-50: #E1F5EE;
+    --teal-600: #0F6E56;
+    --teal-800: #085041;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1e1e1c;
+      --bg-secondary: #262624;
+      --bg-tertiary: #2c2c2a;
+      --text-primary: #f0efe9;
+      --text-secondary: #b4b2a9;
+      --text-tertiary: #888780;
+      --border: rgba(255,255,255,0.1);
+      --border-mid: rgba(255,255,255,0.18);
+      --amber-50: #412402;
+      --amber-100: #633806;
+      --amber-600: #FAC775;
+      --amber-800: #FAEEDA;
+      --blue-50: #042C53;
+      --blue-600: #85B7EB;
+      --blue-800: #B5D4F4;
+      --teal-50: #04342C;
+      --teal-600: #5DCAA5;
+      --teal-800: #9FE1CB;
+    }
+  }
+
+  body {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .shell {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .header {
+    margin-bottom: 2rem;
+  }
+
+  .wordmark {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: 6px;
+  }
+
+  .header h1 {
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .header p {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  .card {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin: 0 0 1rem;
+  }
+
+  .field-group {
+    margin-bottom: 1.25rem;
+  }
+
+  .field-group:last-child {
+    margin-bottom: 0;
+  }
+
+  label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+
+  label .hint-inline {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-tertiary);
+    margin-left: 4px;
+  }
+
+  input[type="text"],
+  input[type="url"],
+  textarea {
+    width: 100%;
+    background: var(--bg-secondary);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 9px 12px;
+    font-size: 14px;
+    color: var(--text-primary);
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input[type="text"]:focus,
+  input[type="url"]:focus,
+  textarea:focus {
+    border-color: var(--border-mid);
+    background: var(--bg);
+  }
+
+  input::placeholder, textarea::placeholder { color: var(--text-tertiary); }
+
+  textarea {
+    min-height: 72px;
+    resize: vertical;
+    line-height: 1.5;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  @media (max-width: 480px) {
+    .two-col { grid-template-columns: 1fr; }
+  }
+
+  .pill-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .pill {
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 99px;
+    border: 0.5px solid var(--border-mid);
+    background: var(--bg);
+    color: var(--text-secondary);
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.12s;
+  }
+
+  .pill:hover { border-color: var(--text-tertiary); }
+
+  .pill.selected-audience {
+    background: var(--teal-50);
+    color: var(--teal-800);
+    border-color: var(--teal-600);
+    font-weight: 500;
+  }
+
+  .pill.selected-tone {
+    background: var(--blue-50);
+    color: var(--blue-800);
+    border-color: var(--blue-600);
+    font-weight: 500;
+  }
+
+  .field-hint {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-top: 5px;
+  }
+
+  .field-hint.selected-summary {
+    color: var(--teal-600);
+  }
+
+  .divider {
+    border: none;
+    border-top: 0.5px solid var(--border);
+    margin: 1.5rem 0;
+  }
+
+  .generate-btn {
+    width: 100%;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    background: var(--text-primary);
+    border: none;
+    color: var(--bg);
+    font-family: inherit;
+    margin-top: 0.5rem;
+    transition: opacity 0.15s;
+  }
+
+  .generate-btn:hover { opacity: 0.85; }
+  .generate-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .status {
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 1rem 0;
+  }
+
+  .results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+  }
+
+  .back-btn {
+    font-size: 12px;
+    padding: 5px 12px;
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    border: 0.5px solid var(--border);
+    color: var(--text-secondary);
+    font-family: inherit;
+  }
+
+  .back-btn:hover { background: var(--bg-tertiary); }
+
+  .tab-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: var(--radius-md);
+    border: 0.5px solid var(--border);
+    background: var(--bg);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.12s;
+  }
+
+  .tab-btn:hover { background: var(--bg-secondary); }
+
+  .tab-btn.active {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-weight: 500;
+    border-color: var(--border-mid);
+  }
+
+  .content-panel { display: none; }
+  .content-panel.visible { display: block; }
+
+  .panel-card {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .panel-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: var(--radius-md);
+  }
+
+  .badge-email { background: var(--blue-50); color: var(--blue-800); }
+  .badge-social { background: var(--teal-50); color: var(--teal-800); }
+
+  .subject-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+  }
+
+  .subject-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  .content-body {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    white-space: pre-wrap;
+  }
+
+  .copy-btn {
+    font-size: 12px;
+    padding: 5px 12px;
+    margin-top: 14px;
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    border: 0.5px solid var(--border);
+    color: var(--text-secondary);
+    font-family: inherit;
+    transition: all 0.12s;
+  }
+
+  .copy-btn:hover { background: var(--bg-tertiary); }
+
+  .hubspot-box {
+    background: var(--amber-50);
+    border: 0.5px solid var(--amber-100);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    margin-top: 1rem;
+  }
+
+  .hubspot-box strong {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--amber-800);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .hubspot-box p {
+    font-size: 12px;
+    color: var(--amber-600);
+    line-height: 1.6;
+  }
+
+  .hs-push-btn {
+    font-size: 12px;
+    padding: 6px 14px;
+    margin-top: 10px;
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    background: var(--bg);
+    border: 0.5px solid var(--amber-100);
+    color: var(--amber-800);
+    font-family: inherit;
+    font-weight: 500;
+  }
+
+  .hs-push-btn:hover { opacity: 0.8; }
+
+  #hs-status {
+    font-size: 12px;
+    color: var(--amber-600);
+    margin-top: 8px;
+  }
+
+  footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 2rem;
+    padding-bottom: 1rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <div class="header">
+    <p class="wordmark">iSellBeer</p>
+    <h1>Event content generator</h1>
+    <p>Fill out the intake form to generate campaign emails and social posts.</p>
+  </div>
+
+  <!-- FORM -->
+  <div id="form-view">
+    <div class="card">
+      <p class="section-label">Event details</p>
+
+      <div class="two-col">
+        <div class="field-group">
+          <label for="event-name">Event name</label>
+          <input type="text" id="event-name" placeholder="e.g. NBWA Legislative Conference" />
+        </div>
+        <div class="field-group">
+          <label for="event-date">Event date(s)</label>
+          <input type="text" id="event-date" placeholder="e.g. April 19–22, 2025" />
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label for="event-link">Event URL</label>
+        <input type="url" id="event-link" placeholder="https://..." />
+      </div>
+
+      <div class="field-group">
+        <label>Target audience <span class="hint-inline">select all that apply</span></label>
+        <div class="pill-group" id="audience-pills">
+          <span class="pill" data-val="Prospects">Prospects</span>
+          <span class="pill" data-val="Existing customers">Existing customers</span>
+          <span class="pill" data-val="Lapsed / former customers">Lapsed / former customers</span>
+          <span class="pill" data-val="Event attendees">Event attendees</span>
+          <span class="pill" data-val="Industry contacts">Industry contacts</span>
+        </div>
+        <p class="field-hint selected-summary" id="audience-summary" style="display:none;"></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="section-label">Campaign details</p>
+
+      <div class="field-group">
+        <label for="campaign-theme">Campaign theme / angle</label>
+        <textarea id="campaign-theme" placeholder="What's the core message or hook? e.g. 'Spreadsheets don't sell beer. Your team does.'"></textarea>
+      </div>
+
+      <div class="field-group">
+        <label for="features">Features / product areas to highlight</label>
+        <textarea id="features" placeholder="e.g. route accountability, depletion tracking, incentive management..." style="min-height:56px;"></textarea>
+      </div>
+
+      <div class="field-group">
+        <label>Tone for this event</label>
+        <div class="pill-group" id="tone-pills">
+          <span class="pill selected-tone" data-val="Bold & direct">Bold & direct</span>
+          <span class="pill" data-val="Educational">Educational</span>
+          <span class="pill" data-val="Urgent">Urgent</span>
+          <span class="pill" data-val="Conversational">Conversational</span>
+          <span class="pill" data-val="Celebratory">Celebratory</span>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label for="cta">Primary CTA</label>
+        <input type="text" id="cta" placeholder="e.g. Book a demo at our booth, Register now, Schedule a meeting" />
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="section-label">Internal details</p>
+
+      <div class="field-group">
+        <label for="attendees">Who's attending from iSellBeer</label>
+        <input type="text" id="attendees" placeholder="e.g. Jake, Sarah — available for demos at Booth 214" />
+      </div>
+
+      <div class="field-group">
+        <label for="scheduler">Meeting scheduler link(s)</label>
+        <input type="url" id="scheduler" placeholder="https://meetings.hubspot.com/..." />
+      </div>
+
+      <div class="field-group">
+        <label for="assets">Assets available</label>
+        <input type="text" id="assets" placeholder="e.g. booth photos, speaker headshots, product screenshots" />
+      </div>
+
+      <div class="field-group">
+        <label for="deadline">Review deadline</label>
+        <input type="text" id="deadline" placeholder="e.g. Friday April 11 by EOD" />
+        <p class="field-hint">One round of edits by this date, then it's locked.</p>
+      </div>
+    </div>
+
+    <button class="generate-btn" id="generate-btn" onclick="generateContent()">Generate emails + social posts</button>
+    <div class="status" id="status-msg" style="display:none;"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-view" style="display:none;">
+    <div class="results-header">
+      <p class="section-label" style="margin:0;">Generated content</p>
+      <button class="back-btn" onclick="resetForm()">← Start over</button>
+    </div>
+
+    <div class="tab-row" id="tab-row"></div>
+    <div id="content-panels"></div>
+
+    <div class="hubspot-box" id="hubspot-box" style="display:none;">
+      <strong>HubSpot-ready</strong>
+      <p>Copy any email into HubSpot > Marketing > Email as a new draft. Paste subject line and body separately. Social posts go into Social > Publishing.</p>
+      <div id="hs-status"></div>
+      <button class="hs-push-btn" onclick="pushToHubSpot()">Push email drafts to HubSpot ↗</button>
+    </div>
+  </div>
+
+  <footer>Built for iSellBeer by Bryant Works</footer>
+</div>
+
+<script>
+  let selectedTone = 'Bold & direct';
+  let selectedAudiences = [];
+  let generatedContent = null;
+
+  document.querySelectorAll('#tone-pills .pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('#tone-pills .pill').forEach(p => p.classList.remove('selected-tone'));
+      pill.classList.add('selected-tone');
+      selectedTone = pill.dataset.val;
+    });
+  });
+
+  document.querySelectorAll('#audience-pills .pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      const val = pill.dataset.val;
+      if (pill.classList.contains('selected-audience')) {
+        pill.classList.remove('selected-audience');
+        selectedAudiences = selectedAudiences.filter(a => a !== val);
+      } else {
+        pill.classList.add('selected-audience');
+        selectedAudiences.push(val);
+      }
+      const summary = document.getElementById('audience-summary');
+      if (selectedAudiences.length > 0) {
+        summary.style.display = 'block';
+        summary.textContent = selectedAudiences.join(', ');
+      } else {
+        summary.style.display = 'none';
+      }
+    });
+  });
+
+  function getFormData() {
+    return {
+      eventName: document.getElementById('event-name').value.trim(),
+      eventDate: document.getElementById('event-date').value.trim(),
+      eventLink: document.getElementById('event-link').value.trim(),
+      audience: selectedAudiences.length > 0 ? selectedAudiences.join(', ') : 'prospects and customers',
+      theme: document.getElementById('campaign-theme').value.trim(),
+      features: document.getElementById('features').value.trim(),
+      tone: selectedTone,
+      cta: document.getElementById('cta').value.trim(),
+      attendees: document.getElementById('attendees').value.trim(),
+      scheduler: document.getElementById('scheduler').value.trim(),
+      assets: document.getElementById('assets').value.trim(),
+      deadline: document.getElementById('deadline').value.trim(),
+    };
+  }
+
+  async function generateContent() {
+    const data = getFormData();
+    const statusEl = document.getElementById('status-msg');
+
+    if (!data.eventName || !data.theme || !data.cta) {
+      statusEl.style.display = 'block';
+      statusEl.textContent = 'Please fill in event name, campaign theme, and CTA at minimum.';
+      return;
+    }
+
+    const btn = document.getElementById('generate-btn');
+    btn.disabled = true;
+    btn.textContent = 'Generating...';
+    statusEl.style.display = 'block';
+    statusEl.textContent = 'Writing your emails and posts — this takes about 15 seconds...';
+
+    const prompt = `You are a copywriter for iSellBeer, a B2B SaaS platform for beer/beverage distributors. The brand voice is direct, industry-savvy, and occasionally punchy. They use lines like "Spreadsheets don't sell beer. Your team does."
+
+Generate content for an upcoming event campaign. Return ONLY valid JSON with this exact structure:
+
+{
+  "emails": [
+    {"number": 1, "timing": "3 weeks before", "subject": "...", "body": "..."},
+    {"number": 2, "timing": "1 week before", "subject": "...", "body": "..."},
+    {"number": 3, "timing": "Day before / day of", "subject": "...", "body": "..."}
+  ],
+  "social": [
+    {"number": 1, "timing": "2 weeks before", "platform": "LinkedIn", "post": "..."},
+    {"number": 2, "timing": "Day before", "platform": "LinkedIn", "post": "..."},
+    {"number": 3, "timing": "Day of / recap", "platform": "LinkedIn", "post": "..."}
+  ]
+}
+
+EVENT DETAILS:
+- Event: ${data.eventName}
+- Date(s): ${data.eventDate}
+- Event URL: ${data.eventLink || 'not provided'}
+- Target audience: ${data.audience}
+- Campaign theme/angle: ${data.theme}
+- Features to highlight: ${data.features || 'core platform capabilities'}
+- Tone: ${data.tone}
+- Primary CTA: ${data.cta}
+- iSellBeer attendees: ${data.attendees || 'not specified'}
+- Meeting scheduler: ${data.scheduler || 'not provided'}
+- Assets available: ${data.assets || 'not specified'}
+
+Write emails that are punchy and short — 150 words max per email body. Social posts should be 100 words max. Max 2 hashtags per post. Return ONLY the JSON, no markdown fences, no preamble.`;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      const result = await response.json();
+      const raw = result.content.filter(b => b.type === 'text').map(b => b.text).join('');
+      const clean = raw.replace(/```json|```/g, '').trim();
+      generatedContent = JSON.parse(clean);
+      renderResults(generatedContent);
+    } catch (err) {
+      statusEl.textContent = 'Something went wrong. Check your connection and try again.';
+      btn.disabled = false;
+      btn.textContent = 'Generate emails + social posts';
+    }
+  }
+
+  function renderResults(content) {
+    document.getElementById('form-view').style.display = 'none';
+    document.getElementById('results-view').style.display = 'block';
+    document.getElementById('status-msg').style.display = 'none';
+
+    const tabRow = document.getElementById('tab-row');
+    const panels = document.getElementById('content-panels');
+    tabRow.innerHTML = '';
+    panels.innerHTML = '';
+
+    const tabs = [
+      ...content.emails.map((e, i) => ({ id: `e${i}`, label: `Email ${e.number}`, type: 'email', data: e })),
+      ...content.social.map((s, i) => ({ id: `s${i}`, label: `Post ${s.number}`, type: 'social', data: s }))
+    ];
+
+    tabs.forEach((tab, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'tab-btn' + (idx === 0 ? ' active' : '');
+      btn.textContent = tab.label;
+      btn.onclick = () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('visible'));
+        document.getElementById('panel-' + tab.id).classList.add('visible');
+      };
+      tabRow.appendChild(btn);
+
+      const panel = document.createElement('div');
+      panel.className = 'content-panel' + (idx === 0 ? ' visible' : '');
+      panel.id = 'panel-' + tab.id;
+
+      if (tab.type === 'email') {
+        const e = tab.data;
+        const copyText = `Subject: ${e.subject}\n\n${e.body}`;
+        panel.innerHTML = `
+          <div class="panel-card">
+            <div class="panel-header">
+              <span class="panel-title">Email ${e.number} — ${e.timing}</span>
+              <span class="badge badge-email">Email</span>
+            </div>
+            <div class="subject-label">Subject line</div>
+            <div class="subject-value">${e.subject}</div>
+            <div class="content-body">${e.body}</div>
+            <button class="copy-btn" data-copy="${encodeURIComponent(copyText)}">Copy email</button>
+          </div>`;
+      } else {
+        const s = tab.data;
+        panel.innerHTML = `
+          <div class="panel-card">
+            <div class="panel-header">
+              <span class="panel-title">Post ${s.number} — ${s.timing}</span>
+              <span class="badge badge-social">${s.platform}</span>
+            </div>
+            <div class="content-body">${s.post}</div>
+            <button class="copy-btn" data-copy="${encodeURIComponent(s.post)}">Copy post</button>
+          </div>`;
+      }
+
+      panels.appendChild(panel);
+    });
+
+    panels.addEventListener('click', e => {
+      if (e.target.classList.contains('copy-btn')) {
+        const text = decodeURIComponent(e.target.dataset.copy);
+        navigator.clipboard.writeText(text).then(() => {
+          const orig = e.target.textContent;
+          e.target.textContent = 'Copied';
+          setTimeout(() => e.target.textContent = orig, 1500);
+        });
+      }
+    });
+
+    document.getElementById('hubspot-box').style.display = 'block';
+  }
+
+  async function pushToHubSpot() {
+    if (!generatedContent) return;
+    const statusEl = document.getElementById('hs-status');
+    statusEl.textContent = 'Connecting to HubSpot...';
+
+    const prompt = `Using the HubSpot MCP, create these 3 marketing email drafts in HubSpot:
+
+${generatedContent.emails.map(e => `EMAIL ${e.number} (${e.timing})\nSubject: ${e.subject}\n\n${e.body}`).join('\n\n---\n\n')}
+
+Create each as a draft email in HubSpot Marketing > Email. Confirm when done.`;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: prompt }],
+          mcp_servers: [{ type: 'url', url: 'https://mcp.hubspot.com/anthropic', name: 'hubspot-mcp' }]
+        })
+      });
+
+      const result = await response.json();
+      const text = result.content.filter(b => b.type === 'text').map(b => b.text).join(' ');
+      statusEl.textContent = text.length > 250 ? text.substring(0, 250) + '...' : text;
+    } catch (err) {
+      statusEl.textContent = 'Could not connect to HubSpot. Copy the emails manually above.';
+    }
+  }
+
+  function resetForm() {
+    document.getElementById('form-view').style.display = 'block';
+    document.getElementById('results-view').style.display = 'none';
+    document.getElementById('generate-btn').disabled = false;
+    document.getElementById('generate-btn').textContent = 'Generate emails + social posts';
+    document.getElementById('status-msg').style.display = 'none';
+    generatedContent = null;
+  }
+</script>
+</body>
+</html>
